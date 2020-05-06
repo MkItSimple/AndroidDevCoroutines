@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
 
         runBlocking {
             delay(300L)
-            Log.d(TAG, "Canceled job!")
+            Log.d(TAG, "Canceled job!")//
             job.cancel()
         }
 
