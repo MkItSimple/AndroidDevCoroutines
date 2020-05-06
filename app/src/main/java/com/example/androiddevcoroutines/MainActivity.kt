@@ -3,9 +3,8 @@ package com.example.androiddevcoroutines
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,21 +14,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        GlobalScope.launch {
-            val networkCallAnswer = doNetworkCall()
-            val networkCallAnswer2 = doNetworkCall2()
-            Log.d(TAG, networkCallAnswer)
-            Log.d(TAG, networkCallAnswer2)
+        // Main, IO, Default, Unconfined, newSingleThreadContext
+        // You can only change the UI in the Main thread
+        // IO used for all kinds of data operations. . . network, database, or writing to files
+        // Default if you are planning on doing complex and long running calculations that will  block the main thread
+        // Default Ex. if you want to sort 10,000 elements
+        // Dispatchers.Unconfined is not confined to specific threads
+        // .launch(newSingleThreadContext("MyThread")) will start a new thread . . and run the coroutine in that new created thread
+
+        // Switching Threads
+        GlobalScope.launch(Dispatchers.IO) {
+            Log.d(TAG, "Starting coroutine in thread ${Thread.currentThread().name}")
+            val answer = doNetworkCall()
+            withContext(Dispatchers.Main){
+                Log.d(TAG, "Setting text in thread ${Thread.currentThread().name}")
+                tvDummy.text = answer
+            }
         }
     }
 
     suspend fun doNetworkCall(): String {
-        delay(5000L)
+        delay(3000L)
         return "This is the answer"
-    }
-
-    suspend fun doNetworkCall2(): String {
-        delay(5000L)
-        return "This is the answer 2"
     }
 }
