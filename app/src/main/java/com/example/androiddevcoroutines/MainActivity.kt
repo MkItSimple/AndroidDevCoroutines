@@ -1,13 +1,17 @@
 package com.example.androiddevcoroutines
 
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.lifecycleScope
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.*
-import kotlin.system.measureTimeMillis
+import androidx.appcompat.app.AppCompatActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import retrofit2.*
+import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalDateTime
+
+const val BASE_URL = "https://us-central1-fir-api-2deff.cloudfunctions.net/app/api/"
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,48 +21,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Example2
-        // lifecycleScope coroutine will be destroyed when MainActivity destroyed
-        btnStartActivity.setOnClickListener {
-            lifecycleScope.launch {
-                while (true) {
-                    delay(1000L)
-                    Log.d(TAG, "Still running ...")
-                }
-            }
+        val okkHttpclient = OkHttpClient.Builder()
+            .build()
 
 
-            GlobalScope.launch {
-                delay(5000L)
-                Intent(this@MainActivity,SecondActivity::class.java).also {
-                    startActivity(it)
-                    finish()
-                }
-            }
+        val api = Retrofit.Builder()
+            .client(okkHttpclient)
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(MyAPI::class.java)
+
+        GlobalScope.launch(Dispatchers.IO) {
+            val  quotes = api.getQuotes()
+//            for (quote in quotes){
+//                Log.d(TAG, quote.toString())
+//            }
         }
-
     }
 
 }
-
-// GlobalScope . . is a bad practice
-
-//// Example1
-//// Even the MainActivity is destroyed the coroutine is still running which is bad
-//btnStartActivity.setOnClickListener {
-//    GlobalScope.launch {
-//        while (true) {
-//            delay(1000L)
-//            Log.d(TAG, "Still running ...")
-//        }
-//    }
-//
-//
-//    GlobalScope.launch {
-//        delay(5000L)
-//        Intent(this@MainActivity,SecondActivity::class.java).also {
-//            startActivity(it)
-//            finish()
-//        }
-//    }
-//}
