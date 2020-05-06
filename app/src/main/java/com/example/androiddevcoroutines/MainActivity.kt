@@ -16,9 +16,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         GlobalScope.launch {
-            delay(3000L) // after 3 seconds will Log below
-            Log.d(TAG, "Coroutine hello from thread ${Thread.currentThread().name}")
+            val networkCallAnswer = doNetworkCall()
+            val networkCallAnswer2 = doNetworkCall2()
+            Log.d(TAG, networkCallAnswer)
+            Log.d(TAG, networkCallAnswer2)
         }
-        Log.d(TAG, "Hello from thread ${Thread.currentThread().name}")
+    }
+
+    suspend fun doNetworkCall(): String {
+        delay(5000L)
+        return "This is the answer"
+    }
+
+    suspend fun doNetworkCall2(): String {
+        delay(5000L)
+        return "This is the answer 2"
     }
 }
