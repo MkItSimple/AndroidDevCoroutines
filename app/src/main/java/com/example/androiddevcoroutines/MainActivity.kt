@@ -14,27 +14,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Main, IO, Default, Unconfined, newSingleThreadContext
-        // You can only change the UI in the Main thread
-        // IO used for all kinds of data operations. . . network, database, or writing to files
-        // Default if you are planning on doing complex and long running calculations that will  block the main thread
-        // Default Ex. if you want to sort 10,000 elements
-        // Dispatchers.Unconfined is not confined to specific threads
-        // .launch(newSingleThreadContext("MyThread")) will start a new thread . . and run the coroutine in that new created thread
+        Log.d(TAG, "Before runBlocking")
 
-        // Switching Threads
-        GlobalScope.launch(Dispatchers.IO) {
-            Log.d(TAG, "Starting coroutine in thread ${Thread.currentThread().name}")
-            val answer = doNetworkCall()
-            withContext(Dispatchers.Main){
-                Log.d(TAG, "Setting text in thread ${Thread.currentThread().name}")
-                tvDummy.text = answer
+        // this will block the main thread
+        runBlocking {
+            launch {
+                delay(3000L)
+                Log.d(TAG, "Finished IO Coroutine 1")
             }
-        }
-    }
 
-    suspend fun doNetworkCall(): String {
-        delay(3000L)
-        return "This is the answer"
+            launch {
+                delay(3000L)
+                Log.d(TAG, "Finished IO Coroutine 2")
+            }
+
+            Log.d(TAG, "Start of runBlocking")
+            delay(5000L)
+            Log.d(TAG, "End of runBlocking")
+        }
+        Log.d(TAG, "After runBlocking")
     }
 }
