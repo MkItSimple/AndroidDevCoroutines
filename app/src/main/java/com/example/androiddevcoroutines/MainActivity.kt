@@ -1,13 +1,16 @@
 package com.example.androiddevcoroutines
 
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import androidx.lifecycle.lifecycleScope
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
-import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.tasks.await
+
+data class Person(
+    val name: String = "",
+    val age: Int = -1
+)
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,48 +20,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Example2
-        // lifecycleScope coroutine will be destroyed when MainActivity destroyed
-        btnStartActivity.setOnClickListener {
-            lifecycleScope.launch {
-                while (true) {
-                    delay(1000L)
-                    Log.d(TAG, "Still running ...")
-                }
-            }
+        val tutorialDocument = FirebaseFirestore
+            .getInstance()
+            .collection("coroutines")
+            .document("tutorial")
 
+        val peter = Person("Peter", 25)
 
-            GlobalScope.launch {
-                delay(5000L)
-                Intent(this@MainActivity,SecondActivity::class.java).also {
-                    startActivity(it)
-                    finish()
-                }
+        GlobalScope.launch(Dispatchers.IO){
+            delay(3000L)
+
+            tutorialDocument.set(peter).await()
+            val person = tutorialDocument.get().await().toObject(Person::class.java)
+
+            withContext(Dispatchers.Main){
+                tvData.text = person.toString()
             }
         }
-
     }
-
 }
-
-// GlobalScope . . is a bad practice
-
-//// Example1
-//// Even the MainActivity is destroyed the coroutine is still running which is bad
-//btnStartActivity.setOnClickListener {
-//    GlobalScope.launch {
-//        while (true) {
-//            delay(1000L)
-//            Log.d(TAG, "Still running ...")
-//        }
-//    }
-//
-//
-//    GlobalScope.launch {
-//        delay(5000L)
-//        Intent(this@MainActivity,SecondActivity::class.java).also {
-//            startActivity(it)
-//            finish()
-//        }
-//    }
-//}
